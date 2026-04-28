@@ -1,0 +1,19 @@
+# Ignore the environment secrets
+.env
+
+# Ignore C# build files (use wildcards to find them in subfolders)
+**/bin/
+**/obj/
+
+# Ignore local settings
+**/appsettings.json
+**/appsettings.Development.json
+
+# Ignore Node/Angular modules (for later)
+**/node_modules/
+
+# Ignore Visual Studio temporary files
+.vs/
+backend/.vs/
+*.vsidx
+backend/appsettings.json
