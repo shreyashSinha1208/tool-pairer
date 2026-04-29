@@ -1,13 +1,15 @@
 using Microsoft.EntityFrameworkCore;
 
-var builder = WebApplication.CreateBuilder(args);
+var builder = WebApplication.CreateBuilder(args); 
 
-builder.Services.AddDbContext<AppDbContext>(options => 
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"))); 
 
-builder.Services.AddOpenApi();
 
-// --- T
+builder.Services.AddOpenApi(); 
+
+var app = builder.Build(); 
+
 if (app.Environment.IsDevelopment())
 {
     using var connection = new NpgsqlConnection(connectionString);
