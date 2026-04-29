@@ -1,23 +1,22 @@
-using Npgsql; // Add this at the very top!
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// --- TEST CODE START ---
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-Console.WriteLine("===============================================");
-Console.WriteLine("🚀 STARTING DATABASE TEST...");
-Console.WriteLine("===============================================");
+builder.Services.AddDbContext<AppDbContext>(options => 
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-try
+builder.Services.AddOpenApi();
+
+// --- T
+if (app.Environment.IsDevelopment())
 {
     using var connection = new NpgsqlConnection(connectionString);
     connection.Open();
     Console.WriteLine("✅ SUCCESS: CONNECTION ESTABLISHED!");
 }
-catch (Exception ex)
-{
-    Console.WriteLine("❌ ERROR: COULD NOT CONNECT!");
-    Console.WriteLine($"REASON: {ex.Message}");
-}
 
-Console.WriteLine("===============================================");
+app.UseHttpsRedirection();
+
+app.MapGet("/", () => "ToolPairer API is running!");
+
+app.Run();

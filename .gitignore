@@ -5,7 +5,6 @@
 **/bin/
 **/obj/
 
-# Ignore local settings
 **/appsettings.json
 **/appsettings.Development.json
 
