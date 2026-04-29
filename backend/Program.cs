@@ -7,11 +7,12 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 
 builder.Services.AddOpenApi();
 
-var app = builder.Build();
-
+// --- T
 if (app.Environment.IsDevelopment())
 {
-    app.MapOpenApi();
+    using var connection = new NpgsqlConnection(connectionString);
+    connection.Open();
+    Console.WriteLine("✅ SUCCESS: CONNECTION ESTABLISHED!");
 }
 
 app.UseHttpsRedirection();
