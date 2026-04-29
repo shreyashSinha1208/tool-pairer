@@ -12,7 +12,9 @@ var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
 {
-    app.MapOpenApi();
+    using var connection = new NpgsqlConnection(connectionString);
+    connection.Open();
+    Console.WriteLine("✅ SUCCESS: CONNECTION ESTABLISHED!");
 }
 
 app.UseHttpsRedirection();
