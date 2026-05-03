@@ -1,0 +1,21 @@
+<div class="bg-[var(--surface)] border border-[var(--border)] rounded-lg p-5 transition-colors hover:border-gray-700">
+  <h3 class="text-[15px] font-semibold text-[var(--text)] mt-2 mb-1.5">{{ tool.name }}</h3>
+  
+  <p class="text-[13px] text-gray-400 leading-relaxed mb-4 line-clamp-2">
+    {{ tool.description }}
+  </p>
+
+  <div class="flex items-center justify-between">
+    <a [routerLink]="['/user', tool.ownerId]"
+       class="text-[12px] text-gray-500 flex items-center gap-1.5 transition-colors hover:text-gray-400">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
+      </svg>
+      {{ ownerName }}
+    </a>
+    
+    <button class="text-[12px] font-medium text-[var(--text)] bg-[var(--surface-2)] border border-[var(--border)] rounded-[5px] px-3 py-1.5 transition-all hover:bg-white hover:text-black">
+      Request
+    </button>
+  </div>
+</div>

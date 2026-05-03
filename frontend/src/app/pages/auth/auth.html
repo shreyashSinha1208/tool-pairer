@@ -1,0 +1,205 @@
+@if (auth.showAuth()) {
+  <!-- Backdrop -->
+  <div id="auth-backdrop"
+       (click)="onBackdropClick($event)"
+       class="fixed inset-0 z-[200] flex items-center justify-center px-4"
+       style="background:rgba(0,0,0,0.7);backdrop-filter:blur(8px);">
+
+    <!-- Modal card -->
+    <div class="w-full max-w-sm rounded-2xl border border-white/10 overflow-hidden shadow-2xl"
+         style="background:var(--surface)">
+
+      <!-- Tabs -->
+      <div class="flex border-b border-white/10">
+        <button (click)="switchMode('login')"
+          class="flex-1 py-3.5 text-sm font-semibold transition-all"
+          [class.text-white]="auth.authMode() === 'login'"
+          [class.text-zinc-500]="auth.authMode() !== 'login'"
+          [style.background]="auth.authMode() === 'login' ? 'var(--surface-2)' : 'transparent'">
+          Login
+        </button>
+        <button (click)="switchMode('signup')"
+          class="flex-1 py-3.5 text-sm font-semibold transition-all"
+          [class.text-white]="auth.authMode() === 'signup'"
+          [class.text-zinc-500]="auth.authMode() !== 'signup'"
+          [style.background]="auth.authMode() === 'signup' ? 'var(--surface-2)' : 'transparent'">
+          Sign Up
+        </button>
+      </div>
+
+      <div class="p-6">
+
+        <!-- ── LOGIN ── -->
+        @if (auth.authMode() === 'login') {
+          <div class="flex flex-col gap-4">
+            <div>
+              <label class="text-xs font-medium text-zinc-500 uppercase tracking-wider block mb-2">Email</label>
+              <input type="email" [(ngModel)]="loginForm.email" placeholder="you@example.com"
+                class="w-full text-sm text-white rounded-lg px-3 py-2.5 border border-white/10 outline-none focus:border-white/30 transition-colors placeholder:text-zinc-600"
+                style="background:var(--surface-2)"/>
+            </div>
+            <div>
+              <label class="text-xs font-medium text-zinc-500 uppercase tracking-wider block mb-2">Password</label>
+              <input type="password" [(ngModel)]="loginForm.password" placeholder="••••••••"
+                class="w-full text-sm text-white rounded-lg px-3 py-2.5 border border-white/10 outline-none focus:border-white/30 transition-colors placeholder:text-zinc-600"
+                style="background:var(--surface-2)"/>
+            </div>
+            <button (click)="submitLogin()"
+              [disabled]="!loginForm.email || !loginForm.password"
+              class="w-full py-2.5 rounded-lg bg-white text-black text-sm font-semibold hover:opacity-85 transition-opacity disabled:opacity-30">
+              Login
+            </button>
+            <p class="text-center text-xs text-zinc-600">
+              No account?
+              <button (click)="switchMode('signup')" class="text-zinc-400 hover:text-white ml-1 transition-colors">Sign up</button>
+            </p>
+          </div>
+        }
+
+        <!-- ── SIGNUP ── -->
+        @if (auth.authMode() === 'signup') {
+
+          <!-- Step bar -->
+          <div class="flex items-center gap-2 mb-6">
+            <div class="flex-1 h-px" [style.background]="'#fff'"></div>
+            <span class="text-xs text-zinc-500 font-medium whitespace-nowrap">Step {{ step() }} of 2</span>
+            <div class="flex-1 h-px" [style.background]="step() >= 2 ? '#fff' : '#333'"></div>
+          </div>
+
+          <!-- STEP 1: Identity -->
+          @if (step() === 1) {
+            <div class="flex flex-col gap-4">
+              <div>
+                <label class="text-xs font-medium text-zinc-500 uppercase tracking-wider block mb-2">Full Name</label>
+                <input type="text" [(ngModel)]="signupForm.fullName" placeholder="Alex Rivera"
+                  class="w-full text-sm text-white rounded-lg px-3 py-2.5 border border-white/10 outline-none focus:border-white/30 transition-colors placeholder:text-zinc-600"
+                  style="background:var(--surface-2)"/>
+              </div>
+              <div>
+                <label class="text-xs font-medium text-zinc-500 uppercase tracking-wider block mb-2">Email</label>
+                <input type="email" [(ngModel)]="signupForm.email" placeholder="you@example.com"
+                  class="w-full text-sm text-white rounded-lg px-3 py-2.5 border border-white/10 outline-none focus:border-white/30 transition-colors placeholder:text-zinc-600"
+                  style="background:var(--surface-2)"/>
+              </div>
+              <div>
+                <label class="text-xs font-medium text-zinc-500 uppercase tracking-wider block mb-2">Password</label>
+                <input type="password" [(ngModel)]="signupForm.password" placeholder="••••••••"
+                  class="w-full text-sm text-white rounded-lg px-3 py-2.5 border border-white/10 outline-none focus:border-white/30 transition-colors placeholder:text-zinc-600"
+                  style="background:var(--surface-2)"/>
+              </div>
+              <button (click)="nextStep()"
+                [disabled]="!signupForm.fullName || !signupForm.email || !signupForm.password"
+                class="w-full py-2.5 rounded-lg bg-white text-black text-sm font-semibold hover:opacity-85 transition-opacity disabled:opacity-30">
+                Continue →
+              </button>
+            </div>
+          }
+
+          <!-- STEP 2: Location + Hub -->
+          @if (step() === 2) {
+            <div class="flex flex-col gap-4">
+              <!-- Map and location (not scrollable) -->
+              @if (locationDone()) {
+                <div class="rounded-lg border border-white/10 overflow-hidden w-full" style="background:var(--surface-2)">
+                  <div id="auth-map" style="height:150px;width:100%;display:block;"></div>
+                  <div class="px-3 py-2 flex items-center gap-2">
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#4ade80" stroke-width="2.5"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>
+                    <span class="text-xs text-zinc-400 truncate">{{ locationAddress() }}</span>
+                  </div>
+                </div>
+              }
+
+              <!-- Scrollable form section -->
+              <div class="flex flex-col gap-4 h-[10em] overflow-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+                <!-- GPS button / address result -->
+                @if (!locationDone()) {
+                  <div class="rounded-lg border border-white/10 p-4" style="background:var(--surface-2)">
+                    <p class="text-sm font-medium text-white mb-1">Find your building</p>
+                    <p class="text-xs text-zinc-500 mb-3">We'll detect your location using GPS.</p>
+                    @if (locationError()) {
+                      <p class="text-xs text-red-400 mb-2">{{ locationError() }}</p>
+                    }
+                    <button (click)="requestGPS()" [disabled]="locating()"
+                      class="w-full py-2 rounded-lg border border-white/10 text-xs font-semibold text-white hover:border-white/30 transition-colors disabled:opacity-50">
+                      {{ locating() ? '📡 Detecting…' : '📍 Allow Location' }}
+                    </button>
+                  </div>
+                }
+
+                <!-- Hub selection — found nearby -->
+              @if (nearbyHubs().length > 0) {
+                <div>
+                  <label class="text-xs font-medium text-zinc-500 uppercase tracking-wider block mb-2">Nearby Hubs</label>
+                  <div class="flex flex-col gap-2">
+                    @for (hub of nearbyHubs(); track hub) {
+                      <button (click)="signupForm.hub = hub; signupForm.isNewHub = false"
+                        class="w-full text-left px-3 py-2.5 rounded-lg border border-zinc-600 text-sm transition-all"
+                        [class.border-white]="signupForm.hub === hub"
+                        [class.text-white]="signupForm.hub === hub"
+                        [class.border-zinc-600]="signupForm.hub !== hub"
+                        [class.text-zinc-400]="signupForm.hub !== hub"
+                        style="background:var(--surface-2)">
+                        🏢 {{ hub }}
+                      </button>
+                    }
+                    <button (click)="signupForm.isNewHub = true; signupForm.hub = ''"
+                      class="w-full text-left px-3 py-2.5 rounded-lg border border-zinc-600 text-sm transition-all"
+                      [class.border-white]="signupForm.isNewHub"
+                      [class.text-white]="signupForm.isNewHub"
+                      [class.border-zinc-600]="!signupForm.isNewHub"
+                      [class.text-zinc-400]="!signupForm.isNewHub"
+                      style="background:var(--surface-2)">
+                      ＋ Create new hub
+                    </button>
+                  </div>
+                </div>
+              }
+
+              <!-- No hubs found — auto prompt create -->
+              @if (noHubsFound() && locationDone()) {
+                <div class="rounded-lg border border-white/10 p-3" style="background:var(--surface-2)">
+                  <p class="text-xs text-zinc-400 mb-2">No hubs found nearby. Be the first — create one!</p>
+                  <input type="text" [(ngModel)]="signupForm.newHubName" placeholder="e.g. Green Valley Apartments"
+                    class="w-full text-sm text-white rounded-lg px-3 py-2.5 border border-white/10 outline-none focus:border-white/30 transition-colors placeholder:text-zinc-600"
+                    style="background:var(--bg)"/>
+                </div>
+              }
+
+              <!-- New hub name input (when chosen from list) -->
+              @if (signupForm.isNewHub && !noHubsFound()) {
+                <input type="text" [(ngModel)]="signupForm.newHubName" placeholder="Hub name e.g. Skyline Apts"
+                  class="w-full text-sm text-white rounded-lg px-3 py-2.5 border border-white/10 outline-none focus:border-white/30 transition-colors placeholder:text-zinc-600"
+                  style="background:var(--surface-2)"/>
+              }
+
+              <!-- Flat number -->
+              @if (locationDone()) {
+                <div>
+                  <label class="text-xs font-medium text-zinc-500 uppercase tracking-wider block mb-2">Building Address</label>
+                  <input type="text" [(ngModel)]="signupForm.hub" placeholder="e.g. Skyline Apartments"
+                    class="w-full text-sm text-white rounded-lg px-3 py-2.5 border border-white/10 outline-none focus:border-white/30 transition-colors placeholder:text-zinc-600"
+                    style="background:var(--surface-2)"/>
+                </div>
+              }
+              </div>
+
+              <div class="flex gap-2">
+                <button (click)="prevStep()"
+                  class="px-4 py-2.5 rounded-lg border border-white/10 text-sm text-zinc-400 hover:text-white hover:border-white/25 transition-all">
+                  ← Back
+                </button>
+                <button (click)="submitSignup()"
+                  [disabled]="!locationDone() || (!signupForm.hub && !signupForm.newHubName)"
+                  class="flex-1 py-2.5 rounded-lg bg-white text-black text-sm font-semibold hover:opacity-85 transition-opacity disabled:opacity-30">
+                  Create Account
+                </button>
+              </div>
+
+            </div>
+          }
+        }
+
+      </div>
+    </div>
+  </div>
+}
