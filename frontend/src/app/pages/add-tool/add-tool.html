@@ -1,0 +1,94 @@
+<div class="max-w-[1100px] mx-auto px-6 py-12">
+  <div class="max-w-[480px]">
+    <h1 class="text-[22px] font-bold tracking-tight mb-1 text-white">List a Tool</h1>
+    <p class="text-sm text-gray-500 mb-8">Share a tool with your community.</p>
+
+    @if (submitted()) {
+      <div class="bg-[var(--surface)] border border-[#2a2a2a] rounded-lg p-6 text-center">
+        <div class="text-xl mb-2 text-white">✓</div>
+        <p class="text-sm text-gray-400">Tool listed! Redirecting…</p>
+      </div>
+    } @else {
+      <div class="flex flex-column flex-col gap-4">
+        <div>
+          <label class="block text-[12px] font-medium text-gray-400 uppercase tracking-wider mb-1.5">
+            Tool Name *
+          </label>
+          <input
+            type="text"
+            [(ngModel)]="form.name"
+            placeholder="e.g. DeWalt Drill"
+            class="w-full bg-[var(--surface)] border border-[var(--border)] text-[var(--text)] rounded-md px-3 py-2.5 text-sm outline-none transition-colors focus:border-gray-600"
+          />
+        </div>
+
+        <div>
+          <label class="block text-[12px] font-medium text-gray-400 uppercase tracking-wider mb-1.5">
+            Daily Rate ($)
+          </label>
+          <input
+            type="number"
+            [(ngModel)]="form.dailyRate"
+            placeholder="e.g. 5"
+            class="w-full bg-[var(--surface)] border border-[var(--border)] text-[var(--text)] rounded-md px-3 py-2.5 text-sm outline-none transition-colors focus:border-gray-600"
+          />
+        </div>
+
+        <div>
+          <label class="block text-[12px] font-medium text-gray-400 uppercase tracking-wider mb-1.5">
+            Status
+          </label>
+          <select
+            [(ngModel)]="form.status"
+            class="w-full bg-[var(--surface)] border border-[var(--border)] text-[var(--text)] rounded-md px-3 py-2.5 text-sm outline-none cursor-pointer transition-colors focus:border-gray-600 appearance-none"
+          >
+            @for (status of statuses; track status) {
+              <option [value]="status">{{ status }}</option>
+            }
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-[12px] font-medium text-gray-400 uppercase tracking-wider mb-1.5">
+            Description
+          </label>
+          <textarea
+            [(ngModel)]="form.description"
+            placeholder="Condition, model number, any notes for borrowers..."
+            rows="3"
+            class="w-full bg-[var(--surface)] border border-[var(--border)] text-[var(--text)] rounded-md px-3 py-2.5 text-sm outline-none resize-y transition-colors focus:border-gray-600 leading-relaxed"
+          ></textarea>
+        </div>
+
+        <div>
+          <label class="block text-[12px] font-medium text-gray-400 uppercase tracking-wider mb-1.5">
+            Owner *
+          </label>
+          <select
+            [(ngModel)]="form.ownerId"
+            class="w-full bg-[var(--surface)] border border-[var(--border)] text-[var(--text)] rounded-md px-3 py-2.5 text-sm outline-none cursor-pointer transition-colors focus:border-gray-600 appearance-none"
+          >
+            <option value="">Select owner</option>
+            @for (user of users(); track user.id) {
+              <option [value]="user.id">{{ user.name }}</option>
+            }
+          </select>
+        </div>
+
+        <div class="flex gap-2.5 pt-1">
+          <button
+            (click)="submit()"
+            [disabled]="!form.name || !form.ownerId"
+            class="text-sm font-semibold text-black bg-white rounded-md px-6 py-2.5 transition-opacity disabled:opacity-35 hover:opacity-90 font-sans"
+          >
+            List Tool
+          </button>
+          <a routerLink="/tools"
+             class="text-sm font-medium text-gray-500 bg-[var(--surface)] border border-[var(--border)] rounded-md px-[18px] py-2.5 transition-all hover:text-gray-300 inline-flex items-center">
+            Cancel
+          </a>
+        </div>
+      </div>
+    }
+  </div>
+</div>
