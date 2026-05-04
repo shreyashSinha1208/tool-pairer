@@ -4,6 +4,7 @@ import { AuthService } from '../../services/auth.service';
 import { DataService } from '../../services/data.service';
 import { LocationService } from '../../services/location.service';
 import { MapService } from '../../services/map.service';
+import { User } from '../../models/models';
 
 @Component({
   selector: 'app-auth-modal',
@@ -19,17 +20,17 @@ export class AuthModalComponent implements OnDestroy {
   mapService = inject(MapService);
 
   step = signal(1);
-  locating = signal(false);         
-  locationDone = signal(false);     
-  locationError = signal('');        
-  nearbyHubs = signal<string[]>([]); 
-  noHubsFound = signal(false);       
+  locating = signal(false);
+  locationDone = signal(false);
+  locationError = signal('');
+  nearbyHubs = signal<string[]>([]);
+  noHubsFound = signal(false);
 
   loginForm = { email: '', password: '' };
   signupForm = { fullName: '', email: '', password: '', hub: '', isNewHub: false, newHubName: '' };
 
   async requestGPS() {
-    this.locating.set(true); 
+    this.locating.set(true);
     this.locationError.set('');
 
     if (!navigator.geolocation) {
@@ -45,13 +46,10 @@ export class AuthModalComponent implements OnDestroy {
 
         const address = await this.locService.getAddress(latitude, longitude);
 
-        const mockNearby = this.ds.getUsers()()
-          .map(u => u.name + "'s Hub")
-          .slice(0, 2);
+        const hubs = await this.ds.getNearbyHubs(latitude, longitude) ?? [];
+        this.nearbyHubs.set(hubs);
+        this.noHubsFound.set(hubs.length === 0);
 
-        this.nearbyHubs.set(mockNearby);
-        this.noHubsFound.set(mockNearby.length === 0);
-        
         this.locationDone.set(true);
         this.locating.set(false);
 
@@ -64,6 +62,32 @@ export class AuthModalComponent implements OnDestroy {
         this.locating.set(false);
       }
     );
+  }
+
+  submitLogin() { this.auth.login('1'); }
+  async submitSignup() {
+    try {
+      let selectedHubId = this.signupForm.hub;
+      if (this.signupForm.isNewHub) {
+        const newHub = await this.ds.addHub(
+          {
+            name: this.signupForm.newHubName,
+            latitude: 0,
+            longitude: 0,
+            address: ''
+          });
+
+        const user: User = await this.ds.registerUser(
+          this.signupForm.fullName,
+          this.signupForm.email,
+          selectedHubId
+        ) ?? {} as User;
+
+        this.auth.login(user.id);
+      }
+    } catch (e: any) {
+      console.error('Signup failed', e);
+    }
   }
 
   get locationAddress() {
@@ -85,10 +109,7 @@ export class AuthModalComponent implements OnDestroy {
     if ((e.target as HTMLElement).id === 'auth-backdrop') this.closeModal();
   }
 
-  submitLogin() { this.auth.login('1'); }
-  submitSignup() { this.auth.login('1'); }
-
   ngOnDestroy() {
-    this.mapService.destroyMap(); 
+    this.mapService.destroyMap();
   }
 }
