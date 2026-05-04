@@ -3,6 +3,15 @@ import { User, Tool, ToolStatus } from '../models/models';
 
 @Injectable({ providedIn: 'root' })
 export class DataService {
+  registerUser(fullName: string, email: string, selectedHubId: string) {
+    throw new Error('Method not implemented.');
+  }
+  addHub(arg0: { name: string; latitude: number; longitude: number; address: string; }) {
+    throw new Error('Method not implemented.');
+  }
+  getNearbyHubs(latitude: number, longitude: number) {
+    throw new Error('Method not implemented.');
+  }
   private users = signal<User[]>([
     { id: '1', name: 'Alex Rivera', email: 'alex@example.com', hubId: '1', rating: 4.8 },
     { id: '2', name: 'Jordan Kim', email: 'jordan@example.com', hubId: '1', rating: 4.6 },

@@ -3,11 +3,11 @@
   "version": 1,
   "cli": {
     "packageManager": "npm",
-    "analytics": "345114e5-7b46-40ba-80b0-f741ba0a8975"
+    "analytics": "113e5cdf-9a10-4099-9bd1-b121bab1551f"
   },
   "newProjectRoot": "projects",
   "projects": {
-    "tool-pairer": {
+    "frontend": {
       "projectType": "application",
       "schematics": {},
       "root": "",
@@ -26,8 +26,14 @@
               }
             ],
             "styles": [
+              "node_modules/leaflet/dist/leaflet.css",
               "src/styles.css"
-            ]
+            ],
+            "optimization": {
+              "fonts": {
+                "inline": false
+              }
+            }
           },
           "configurations": {
             "production": {
@@ -57,10 +63,10 @@
           "builder": "@angular/build:dev-server",
           "configurations": {
             "production": {
-              "buildTarget": "tool-pairer:build:production"
+              "buildTarget": "frontend:build:production"
             },
             "development": {
-              "buildTarget": "tool-pairer:build:development"
+              "buildTarget": "frontend:build:development"
             }
           },
           "defaultConfiguration": "development"
