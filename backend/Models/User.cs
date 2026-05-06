@@ -5,7 +5,7 @@
         public Guid ID { get; set; }
         public required string Name { get; set; }
         public required string Email { get; set; }
-        public string? Address { get; set; }
+        public required string Password { get;  set; }
         public double Rating { get; set; }
 
         public Guid? HubId { get; set; }

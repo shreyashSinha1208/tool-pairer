@@ -30,6 +30,7 @@ public class Mutation
         AppDbContext context,
         string name,
         string email,
+        string password,
         Guid hubId)
     {
         var user = new User
@@ -37,6 +38,7 @@ public class Mutation
             ID = Guid.NewGuid(),
             Name = name,
             Email = email,
+            Password = password, 
             HubId = hubId,
             Rating = 5
         };
