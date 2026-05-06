@@ -1,8 +1,88 @@
-import { Injectable, signal } from '@angular/core';
+import { inject, Injectable, signal } from '@angular/core';
 import { User, Tool, ToolStatus } from '../models/models';
+import { Apollo, gql } from 'apollo-angular';
+import { lastValueFrom } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
 export class DataService {
+
+  private apollo = inject(Apollo);
+
+  async login(email: string, password: string) {
+
+    const LOGIN_QUERY = gql
+      `query Login($email: String!, $password: String!) {
+      users(where: 
+      { 
+        email: { eq: $email }, password: { eq: $password } 
+      }) 
+      {
+        id
+        name
+        email
+        hubId
+        rating
+        ownedTools {
+          id
+          name
+          description
+          status
+          dailyRate
+          ownerId
+        }
+      }
+    }`;
+
+    try {
+      const result = await lastValueFrom(
+        this.apollo.query<any>({
+          query: LOGIN_QUERY,
+          variables: { email, password },
+          fetchPolicy: 'no-cache'
+        })
+      );
+      return result.data.users[0] || null;
+    }
+    catch (error) {
+      console.error('Login failed:', error);
+      throw error;
+    }
+  }
+
+  async fetchUserById(id: string): Promise<User | null> {
+    const GET_USER_QUERY = gql`
+    query GetUser($id: UUID!) {
+      userById(id: $id) { 
+        id
+        name
+        email
+        rating
+        ownedTools {
+          id
+          name
+          description
+          status
+          dailyRate
+        }
+      }
+    }
+  `;
+
+    try {
+      const result = await lastValueFrom(
+        this.apollo.query<any>({
+          query: GET_USER_QUERY,
+          variables: { id }
+        })
+      );
+      const data = result.data.userById;
+      return Array.isArray(data) ? data[0] : data;
+    } catch (e) {
+      console.error("Fetch user error", e);
+      return null;
+    }
+  }
+
   registerUser(fullName: string, email: string, selectedHubId: string) {
     throw new Error('Method not implemented.');
   }
@@ -13,19 +93,10 @@ export class DataService {
     throw new Error('Method not implemented.');
   }
   private users = signal<User[]>([
-    { id: '1', name: 'Alex Rivera', email: 'alex@example.com', hubId: '1', rating: 4.8 },
-    { id: '2', name: 'Jordan Kim', email: 'jordan@example.com', hubId: '1', rating: 4.6 },
-    { id: '3', name: 'Sam Patel', email: 'sam@example.com', hubId: '2', rating: 4.9 },
-  ]);
+    { id: '1', name: 'Alex Rivera', email: 'alex@example.com', password: 'password', hubId: '1', ownedTools: [], rating: 4.8 },]);
 
   private tools = signal<Tool[]>([
-    { id: '1', name: 'DeWalt Drill', description: '20V cordless drill, perfect for woodworking and home repairs.', ownerId: '1', status: ToolStatus.Available as const, dailyRate: 5 },
-    { id: '2', name: 'Circular Saw', description: 'Makita 7-1/4" circular saw. Great for lumber cuts.', ownerId: '1', status: ToolStatus.Available as const, dailyRate: 8 },
-    { id: '3', name: 'Pressure Washer', description: 'Sun Joe 2030 PSI electric pressure washer.', ownerId: '2', status: ToolStatus.Available as const, dailyRate: 12 },
-    { id: '4', name: 'Ladder 8ft', description: 'Werner aluminum step ladder, 250 lb capacity.', ownerId: '2', status: ToolStatus.Available as const, dailyRate: 3 },
-    { id: '5', name: 'Angle Grinder', description: 'Bosch 4.5" angle grinder for metal and tile work.', ownerId: '3', status: ToolStatus.Available as const, dailyRate: 6 },
-    { id: '6', name: 'Tile Saw', description: 'SKIL 7" wet tile saw with laser guide.', ownerId: '3', status: ToolStatus.Available as const, dailyRate: 10 },
-  ]);
+    { id: '1', name: 'DeWalt Drill', description: '20V cordless drill, perfect for woodworking and home repairs.', ownerId: '1', status: ToolStatus.Available as const, dailyRate: 5 },]);
 
   getTools() { return this.tools; }
   getUsers() { return this.users; }

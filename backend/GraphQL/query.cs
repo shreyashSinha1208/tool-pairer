@@ -7,8 +7,10 @@ public class Query {
 
     [UseFiltering]
     [UseSorting]
-    public IQueryable<Tool> GetTools(AppDbContext context) => context.Tools;
-
+    public IQueryable<Tool> GetTools(AppDbContext context)=> context.Tools
+        .Include(t => t.Owner)
+        .ThenInclude(u => u.MyHub);
+    
     [UseFiltering]
     [UseSorting]
     public IQueryable<User> GetUsers(AppDbContext context) => context.Users.Include(u => u.OwnedTools);
@@ -40,5 +42,15 @@ public class Query {
     {
         return context.Tools
             .Where(t => t.CurrentBorrowerId == userId);
+    }
+
+    public IQueryable<User> GetUserById(AppDbContext context, Guid id) => context.Users.Include(u => u.OwnedTools)
+        .Where(u => u.ID == id);
+
+    public IQueryable<Tool> GetToolsByOwner(AppDbContext context, Guid ownerId)
+    {
+        return context.Tools
+            .Include(t => t.Owner)
+            .Where(t => t.OwnerId == ownerId);
     }
 }

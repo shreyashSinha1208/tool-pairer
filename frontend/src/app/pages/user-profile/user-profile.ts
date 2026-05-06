@@ -1,10 +1,9 @@
-import { Component, inject, computed } from '@angular/core';
+import { Component, inject, signal, computed, OnInit } from '@angular/core'; // Make sure OnInit is imported
 import { ActivatedRoute, Router } from '@angular/router';
-import { toSignal } from '@angular/core/rxjs-interop';
-import { map } from 'rxjs';
 import { DataService } from '../../services/data.service';
 import { AuthService } from '../../services/auth.service';
 import { ToolCardComponent } from '../../components/tool-card/tool-card';
+import { User } from '../../models/models';
 
 @Component({
   selector: 'app-user-profile',
@@ -12,15 +11,26 @@ import { ToolCardComponent } from '../../components/tool-card/tool-card';
   imports: [ToolCardComponent],
   templateUrl: './user-profile.html',
 })
-export class UserProfileComponent {
+
+export class UserProfileComponent implements OnInit {
   ds = inject(DataService);
   auth = inject(AuthService);
   router = inject(Router);
   route = inject(ActivatedRoute);
 
-  userId = toSignal(this.route.params.pipe(map(p => p['id'] as string)), { initialValue: '' });
-  user = computed(() => this.ds.getUserById(this.userId()));
-  tools = computed(() => this.ds.getToolsByOwner(this.userId()));
+  user = signal<User | null>(null);
+
+  // derivation from the user signal
+  tools = computed(() => this.user()?.ownedTools || []);
+
+  async ngOnInit() {
+    const id = this.route.snapshot.paramMap.get('id');
+    if (id) {
+      console.log('Fetching profile for ID:', id);
+      const data = await this.ds.fetchUserById(id);
+      this.user.set(data);
+    }
+  }
 
   logout() {
     this.auth.logout();

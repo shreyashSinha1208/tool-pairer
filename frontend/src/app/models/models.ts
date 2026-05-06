@@ -2,8 +2,10 @@ export interface User {
   id: string;
   name: string;
   email: string;
-  hubId: string;       // Needed to filter tools by building
-  rating: number;      // To show the 5-star trust score
+  password: string;
+  rating: number;
+  hubId: string;
+  ownedTools?: Tool[];
 }
 
 export interface Hub {
@@ -12,19 +14,20 @@ export interface Hub {
   address: string;
   latitude: number;
   longitude: number;
+  residents?: User[];
 }
 
 export interface Tool {
   id: string;
   name: string;
   description: string;
-  dailyRate: number;   // Added this in backend
-  status: ToolStatus;  // 'Available', 'Borrowed', etc.
+  status: ToolStatus;
+  dailyRate: number;
   ownerId: string;
-  owner?: User;        // Nested object instead of ownerName
+  owner?: User;
+  currentBorrowerId?: string;
 }
 
-// Keep your Enums in sync with the backend
 export enum ToolStatus {
   Available = "AVAILABLE",
   Requested = "REQUESTED",

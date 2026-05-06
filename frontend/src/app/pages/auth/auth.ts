@@ -2,8 +2,7 @@ import { Component, inject, signal, OnDestroy } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../services/auth.service';
 import { DataService } from '../../services/data.service';
-import { LocationService } from '../../services/location.service';
-import { MapService } from '../../services/map.service';
+import { LocationHandler } from './location-handler';
 import { User } from '../../models/models';
 
 @Component({
@@ -16,88 +15,55 @@ export class AuthModalComponent implements OnDestroy {
 
   auth = inject(AuthService);
   ds = inject(DataService);
-  locService = inject(LocationService);
-  mapService = inject(MapService);
-
+  locationHandler = inject(LocationHandler);
   step = signal(1);
-  locating = signal(false);
-  locationDone = signal(false);
-  locationError = signal('');
-  nearbyHubs = signal<string[]>([]);
-  noHubsFound = signal(false);
 
   loginForm = { email: '', password: '' };
   signupForm = { fullName: '', email: '', password: '', hub: '', isNewHub: false, newHubName: '' };
 
+  get locating() { return this.locationHandler.locating(); }
+  get locationDone() { return this.locationHandler.locationDone(); }
+  get locationError() { return this.locationHandler.locationError(); }
+  get nearbyHubs() { return this.locationHandler.nearbyHubs(); }
+  get noHubsFound() { return this.locationHandler.noHubsFound(); }
+  get locationAddress() { return this.locationHandler.address; }
+
   async requestGPS() {
-    this.locating.set(true);
-    this.locationError.set('');
-
-    if (!navigator.geolocation) {
-      this.locationError.set('Geolocation not supported.');
-      this.locating.set(false);
-      return;
-    }
-
-    navigator.geolocation.getCurrentPosition(
-      async (pos) => {
-        const { latitude, longitude } = pos.coords;
-        this.locService.coords.set({ lat: latitude, lng: longitude });
-
-        const address = await this.locService.getAddress(latitude, longitude);
-
-        const hubs = await this.ds.getNearbyHubs(latitude, longitude) ?? [];
-        this.nearbyHubs.set(hubs);
-        this.noHubsFound.set(hubs.length === 0);
-
-        this.locationDone.set(true);
-        this.locating.set(false);
-
-        setTimeout(() => {
-          this.mapService.initMap('auth-map', latitude, longitude, address);
-        }, 150);
-      },
-      () => {
-        this.locationError.set('Access denied. Please allow location.');
-        this.locating.set(false);
-      }
-    );
+    await this.locationHandler.requestGPS();
   }
 
-  submitLogin() { this.auth.login('1'); }
+  async submitLogin() {
+    try {
+      const user = await this.ds.login(this.loginForm.email, this.loginForm.password) ?? {} as User;
+      this.auth.login(user.id);
+    } catch (e: any) {
+      console.error('Login failed', e);
+    }
+  }
+
   async submitSignup() {
     try {
       let selectedHubId = this.signupForm.hub;
       if (this.signupForm.isNewHub) {
-        const newHub = await this.ds.addHub(
-          {
-            name: this.signupForm.newHubName,
-            latitude: 0,
-            longitude: 0,
-            address: ''
-          });
 
-        const user: User = await this.ds.registerUser(
-          this.signupForm.fullName,
-          this.signupForm.email,
-          selectedHubId
-        ) ?? {} as User;
-
-        this.auth.login(user.id);
       }
+
+      const user: User = await this.ds.registerUser(
+        this.signupForm.fullName,
+        this.signupForm.email,
+        selectedHubId
+      ) ?? {} as User;
+
+      this.auth.login(user.id);
     } catch (e: any) {
       console.error('Signup failed', e);
     }
   }
 
-  get locationAddress() {
-    return this.locService.address;
-  }
-
   switchMode(m: 'login' | 'signup') {
     this.auth.authMode.set(m);
     this.step.set(1);
-    this.locationDone.set(false);
+    this.locationHandler.resetLocation();
     this.signupForm = { fullName: '', email: '', password: '', hub: '', isNewHub: false, newHubName: '' };
   }
 
@@ -110,6 +76,6 @@ export class AuthModalComponent implements OnDestroy {
   }
 
   ngOnDestroy() {
-    this.mapService.destroyMap();
+    this.locationHandler.destroyMap();
   }
 }
